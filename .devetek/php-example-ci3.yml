@@ -13,12 +13,7 @@ build:
             steps:
                 - name: "Build Code Igniter 3"
                   command:
-                    - ./scripts/gen-fpm.sh ${APP_NAME} ${APP_PORT}
-                    - rm -rf scripts
-                    - rm -rf php.ini
-                    - rm -rf .user.ini
-                    - rm -rf security.ini
-                    - rm -rf db-backup
+                    - ./scripts/gen-fpm.sh ${APP_NAME}
             environment:
                 - key: APP_NAME
                   value: php-ci3-example

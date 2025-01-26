@@ -5,7 +5,6 @@ LINUX_USER=$(whoami)
 
 # dPanel build dynamic variable
 APP_NAME=$1
-APP_PORT=$2
 APP_DIR=/home/${LINUX_USER}/run/php-fpm
 
 # create fpm run folder
