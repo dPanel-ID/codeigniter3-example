@@ -1,4 +1,3 @@
-# Cloud Devetek Standard Definition v0.0.1-alpha.0 Go Example
 version: v0.0.1-alpha.0
 
 setup:
@@ -16,9 +15,9 @@ build:
                     - ./scripts/gen-fpm.sh ${APP_NAME}
             environment:
                 - key: APP_NAME
-                  value: php-ci3-example
+                  value: codeigniter3-example
 
 run:
-    name: php-ci3-example
+    name: codeigniter3-example
     description: PHP Code Igniter 3 Example
-    command: php-fpm --nodaemonize --fpm-config ${HOME}/run/php-fpm/php-ci3-example.conf
+    command: php-fpm --nodaemonize --fpm-config ${HOME}/run/php-fpm/codeigniter3-example.conf
