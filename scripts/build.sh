@@ -3,7 +3,6 @@
 CURRENT_DIR=$(pwd)
 LINUX_USER=$(whoami)
 APP_NAME=$(basename "$CURRENT_DIR")
-FRANKEN_DIR=${CURRENT_DIR}/run/frankenphp
 PHP_FPM_DIR=${CURRENT_DIR}/run/php-fpm
 
 # create php-fpm config folder if not exist
