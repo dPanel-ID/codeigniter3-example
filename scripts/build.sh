@@ -14,7 +14,7 @@ fi
 cat > ${PHP_FPM_DIR}/${APP_NAME}.conf <<EOL
 [global]
 pid = ${PHP_FPM_DIR}/process.pid
-error_log = ${PHP_FPM_DIR}/${APP_NAME}/php-error.log
+error_log = ${PHP_FPM_DIR}/php-error.log
 
 [${APP_NAME}]
 listen = 127.0.0.1:${PHP_FPM_DIR}/${APP_NAME}.sock
