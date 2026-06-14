@@ -4,66 +4,36 @@ CURRENT_DIR=$(pwd)
 LINUX_USER=$(whoami)
 APP_NAME=$(basename "$CURRENT_DIR")
 FRANKEN_DIR=${CURRENT_DIR}/run/frankenphp
+PHP_FPM_DIR=${CURRENT_DIR}/run/php-fpm
 
-# create frankenphp config folder if not exist
-if [ ! -d "${FRANKEN_DIR}" ]; then
-  mkdir -p ${FRANKEN_DIR}
+# create php-fpm config folder if not exist
+if [ ! -d "${PHP_FPM_DIR}" ]; then
+  mkdir -p ${PHP_FPM_DIR}
 fi
 
+#  create fpm config
+cat > ${PHP_FPM_DIR}/${APP_NAME}.conf <<EOL
+[global]
+pid = ${CURRENT_DIR}/logs/${APP_NAME}/process.pid
+error_log = ${CURRENT_DIR}/logs/${APP_NAME}/php-error.log
 
-# create web caddy web 
-cat > ${FRANKEN_DIR}/${APP_NAME}.Caddyfile << EOL
-{
-   	{\$CADDY_GLOBAL_OPTIONS}
+[${APP_NAME}]
+listen = ${PHP_FPM_DIR}/${APP_NAME}.sock
+listen.allowed_clients = 127.0.0.1
 
-	admin off
-	auto_https off
+clear_env = no
 
-	frankenphp {
-		{\$FRANKENPHP_CONFIG}
-		num_threads 1
-		max_threads 1
-		php_ini memory_limit 64M
-	}
-	order php_server before file_server
-	order php before file_server
-}
-{\$CADDY_EXTRA_CONFIG}
-:{\$PORT} {
-	# Remove Via and Powered-By headers
-	header {
-		-Via
-		-X-Powered-By
-	}
+pm = static
+pm.max_children = 3
+pm.start_servers = 2
+pm.min_spare_servers = 2
+pm.max_spare_servers = 2
+pm.max_requests = 500
 
-	# Disallowed request pattern
-	@disallowedPath {
-		path /.git*
-		path /.env*
-		path *.sql
-		path *.sh
-		path *.gitignore
-		path /wp-content/uploads/*.php
-	}
+php_admin_flag[display_errors] = off
+php_admin_flag[log_errors] = on
+php_admin_value[error_log] = ${CURRENT_DIR}/logs/${APP_NAME}/\$pool.error.log
 
-	handle @disallowedPath {
-		respond "Request Not Allowed" 403
-	}
-
-	@static {
-		file
-		path *.ico *.css *.js *.gif *.jpg *.jpeg *.png *.svg *.woff
-	}
-    	root * ${CURRENT_DIR}
-		encode zstd br gzip
-    
-	{\$CADDY_SERVER_EXTRA_DIRECTIVES}
-	php_server
-
-	log {
-		output stdout
-        format json
-        level ERROR
-    }
-}
+slowlog=${CURRENT_DIR}/logs/${APP_NAME}/\$pool.slow.log
+request_slowlog_timeout=10s
 EOL
