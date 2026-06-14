@@ -17,7 +17,7 @@ pid = ${PHP_FPM_DIR}/process.pid
 error_log = ${PHP_FPM_DIR}/php-error.log
 
 [${APP_NAME}]
-listen = 127.0.0.1:${PHP_FPM_DIR}/${APP_NAME}.sock
+listen = ${PHP_FPM_DIR}/${APP_NAME}.sock
 listen.allowed_clients = 127.0.0.1
 
 clear_env = no
