@@ -13,11 +13,11 @@ fi
 #  create fpm config
 cat > ${PHP_FPM_DIR}/${APP_NAME}.conf <<EOL
 [global]
-pid = ${CURRENT_DIR}/logs/${APP_NAME}/process.pid
-error_log = ${CURRENT_DIR}/logs/${APP_NAME}/php-error.log
+pid = ${PHP_FPM_DIR}/process.pid
+error_log = ${PHP_FPM_DIR}/${APP_NAME}/php-error.log
 
 [${APP_NAME}]
-listen = ${PHP_FPM_DIR}/${APP_NAME}.sock
+listen = 127.0.0.1:${PHP_FPM_DIR}/${APP_NAME}.sock
 listen.allowed_clients = 127.0.0.1
 
 clear_env = no
@@ -31,8 +31,8 @@ pm.max_requests = 500
 
 php_admin_flag[display_errors] = off
 php_admin_flag[log_errors] = on
-php_admin_value[error_log] = ${CURRENT_DIR}/logs/${APP_NAME}/\$pool.error.log
+php_admin_value[error_log] = ${PHP_FPM_DIR}/\$pool.error.log
 
-slowlog=${CURRENT_DIR}/logs/${APP_NAME}/\$pool.slow.log
+slowlog=${PHP_FPM_DIR}/\$pool.slow.log
 request_slowlog_timeout=10s
 EOL
