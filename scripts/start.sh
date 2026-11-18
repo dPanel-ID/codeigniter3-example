@@ -1,19 +1,18 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Runtime command for dPanel: starts FrankenPHP with the configuration that
+# scripts/build.sh wrote. dPanel gives the app its port in $PORT.
+set -euo pipefail
 
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+APP_NAME="$(basename "${APP_DIR}")"
+cd "${APP_DIR}"
 
-export CURRENT_DIR=$(pwd)
-export LINUX_USER=$(whoami)
-export APP_NAME=$(basename "$CURRENT_DIR")
-export FRANKEN_DIR=${CURRENT_DIR}/run/frankenphp
-export PHP_FPM_DIR=${CURRENT_DIR}/run/php-fpm
-
-# Load environment variables dari .env jika ada
-if [ -f "${CURRENT_DIR}/.env" ]; then
+# Optional local overrides; dPanel passes runtime variables directly.
+if [[ -f .env ]]; then
   set -a
-  # shellcheck source=../.env
-  source "${CURRENT_DIR}/.env"
+  # shellcheck source=/dev/null
+  source .env
   set +a
-  echo "[start] .env loaded"
 fi
 
-php-fpm --nodaemonize --fpm-config ${PHP_FPM_DIR}/${APP_NAME}.conf
+exec frankenphp run --config "run/frankenphp/${APP_NAME}.Caddyfile"

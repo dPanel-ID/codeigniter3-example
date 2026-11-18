@@ -23,7 +23,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = 'http://localhost';
+// dPanel: set CI_BASE_URL to the public address, for example
+// https://ci3.example.com/ (with the trailing slash). The fallback suits
+// ./scripts/start-dev.sh on your own computer.
+$config['base_url'] = getenv('CI_BASE_URL') ? getenv('CI_BASE_URL') : 'http://localhost:8081/';
 
 /*
 |--------------------------------------------------------------------------
@@ -35,7 +38,9 @@ $config['base_url'] = 'http://localhost';
 | variable so that it is blank.
 |
 */
-$config['index_page'] = 'index.php';
+// FrankenPHP's php_server sends every unknown path to index.php, so URLs
+// do not need "index.php" in them.
+$config['index_page'] = '';
 
 /*
 |--------------------------------------------------------------------------
@@ -387,7 +392,8 @@ $config['sess_driver'] = 'files';
 $config['sess_cookie_name'] = 'ci_session';
 $config['sess_samesite'] = 'Lax';
 $config['sess_expiration'] = 7200;
-$config['sess_save_path'] = NULL;
+// Created by scripts/build.sh; kept out of git.
+$config['sess_save_path'] = APPPATH.'cache/sessions';
 $config['sess_match_ip'] = FALSE;
 $config['sess_time_to_update'] = 300;
 $config['sess_regenerate_destroy'] = FALSE;
