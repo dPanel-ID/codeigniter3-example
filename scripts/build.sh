@@ -1,38 +1,54 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Build step for dPanel: prepares the writable folders CodeIgniter 3 needs and
+# writes a FrankenPHP (Caddy) configuration that serves the app on $PORT.
+# dPanel runs it from the repository root; it is safe to run more than once.
+set -euo pipefail
 
-CURRENT_DIR=$(pwd)
-LINUX_USER=$(whoami)
-APP_NAME=$(basename "$CURRENT_DIR")
-PHP_FPM_DIR=${CURRENT_DIR}/run/php-fpm
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+APP_NAME="$(basename "${APP_DIR}")"
+RUN_DIR="${APP_DIR}/run/frankenphp"
 
-# create php-fpm config folder if not exist
-if [ ! -d "${PHP_FPM_DIR}" ]; then
-  mkdir -p ${PHP_FPM_DIR}
-fi
+cd "${APP_DIR}"
+echo "Preparing CodeIgniter 3 in ${APP_DIR}"
 
-#  create fpm config
-cat > ${PHP_FPM_DIR}/${APP_NAME}.conf <<EOL
-[global]
-pid = ${PHP_FPM_DIR}/process.pid
-error_log = ${PHP_FPM_DIR}/php-error.log
+# CodeIgniter writes cache files, logs and file sessions here.
+mkdir -p "${RUN_DIR}" application/cache/sessions application/logs
 
-[${APP_NAME}]
-listen = ${PHP_FPM_DIR}/${APP_NAME}.sock
-listen.allowed_clients = 127.0.0.1
+cat > "${RUN_DIR}/${APP_NAME}.Caddyfile" <<EOL
+{
+	admin off
+	auto_https off
 
-clear_env = no
+	frankenphp {
+		num_threads 2
+		max_threads 4
+		php_ini memory_limit 128M
+		php_ini expose_php Off
+		php_ini log_errors On
+		php_ini error_log /dev/stderr
+	}
+	order php_server before file_server
+}
 
-pm = static
-pm.max_children = 3
-pm.start_servers = 2
-pm.min_spare_servers = 2
-pm.max_spare_servers = 2
-pm.max_requests = 500
+:{\$PORT:8081} {
+	root * ${APP_DIR}
+	encode zstd br gzip
 
-php_admin_flag[display_errors] = off
-php_admin_flag[log_errors] = on
-php_admin_value[error_log] = ${PHP_FPM_DIR}/\$pool.error.log
+	header {
+		-Via
+		-X-Powered-By
+	}
 
-slowlog=${PHP_FPM_DIR}/\$pool.slow.log
-request_slowlog_timeout=10s
+	# CodeIgniter's own folders, scripts and dotfiles never leave the server.
+	@private {
+		path /application/* /system/* /scripts/* /run/*
+		path /.git* /.env* /composer.* *.sh *.sql *.log
+	}
+	respond @private "Not Found" 404
+
+	# Everything else that is not a real file goes to index.php.
+	php_server
+}
 EOL
+
+echo "Wrote ${RUN_DIR}/${APP_NAME}.Caddyfile"

@@ -53,7 +53,11 @@
  *
  * NOTE: If you change these, also change the error_reporting() code below
  */
-	define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'development');
+	// dPanel passes runtime variables as environment variables, which PHP does
+	// not always copy into $_SERVER, so read both. Production is the default:
+	// set CI_ENV=development on your own computer to see every PHP error.
+	$ci_env = isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : getenv('CI_ENV');
+	define('ENVIRONMENT', $ci_env ? $ci_env : 'production');
 
 /*
  *---------------------------------------------------------------
@@ -75,11 +79,11 @@ switch (ENVIRONMENT)
 		ini_set('display_errors', 0);
 		if (version_compare(PHP_VERSION, '5.3', '>='))
 		{
-			error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
+			error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~2048 /* E_STRICT, deprecated in PHP 8.4 */ & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
 		}
 		else
 		{
-			error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_USER_NOTICE);
+			error_reporting(E_ALL & ~E_NOTICE & ~2048 /* E_STRICT, deprecated in PHP 8.4 */ & ~E_USER_NOTICE);
 		}
 	break;
 
